@@ -1,0 +1,57 @@
+version: '3'
+services:
+
+  # MQTT Server (MOSCA)
+  #
+  mqtt_server:
+    image: matteocollina/mosca
+    ports:
+      - "1883:1883"
+
+  # Storage (Postgres)
+  #
+  storage:
+    image: jeckel/omeglast-postgresql:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=admin
+
+  # Grafana Server
+  #
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - storage
+    environment:
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=storage
+      - GF_DATABASE_NAME=grafana
+      - GF_DATABASE_USER=admin
+      - GF_DATABASE_PASSWORD=admin
+
+  # IOT Server
+  #
+  server:
+    image: jeckel/omeglast-server:latest
+    depends_on:
+      - mqtt_server
+      - storage
+    environment:
+      - MQTT_HOST=mqtt_server
+      - MQTT_PORT=1883
+      - POSTGRES_HOST=storage
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DATABASE=omeglast
+
+  # Storage UI
+  #
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
