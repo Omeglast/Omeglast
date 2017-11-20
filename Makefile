@@ -1,13 +1,18 @@
 .PHONY: up stop down pull
 
+COMPOSE_CMD:=docker-compose
+ifeq ($(ENV),dev)
+	COMPOSE_CMD:=docker-compose -f docker-compose.dev.yml
+endif
+
 up:
-	@docker-compose up -d storage && sleep 5 && docker-compose up
+	@${COMPOSE_CMD} up -d storage && sleep 5 && ${COMPOSE_CMD} up
 
 stop:
-	@docker-compose stop
+	@${COMPOSE_CMD} stop
 
 down:
-	@docker-compose down
+	@${COMPOSE_CMD} down
 
 pull:
-	@docker-compose pull
+	@${COMPOSE_CMD} pull
