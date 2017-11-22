@@ -18,6 +18,8 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin
 
+  # Grafana dedicated storage
+  #
   grafana-storage:
     image: postgres:10-alpine
     volumes:
@@ -77,9 +79,27 @@ services:
       - MQTT_HOST=mqtt_server
       - MQTT_PORT=1883
       - WEATHER_LOCATION=Paris, FR
-      - PUSH_INTERVAL=5000
+      - PUSH_INTERVAL=15000
       - TEMPERATURE_TOPIC=sensor/weather/paris/temperature
       - HUMIDITY_TOPIC=sensor/weather/paris/humidity
+
+  # Weather client for Santiago
+  #
+  weather-santiago:
+    image: node:8-alpine
+    volumes:
+      - ../weather-client:/app
+    working_dir: /app
+    command: npm start
+    depends_on:
+      - mqtt_server
+    environment:
+      - MQTT_HOST=mqtt_server
+      - MQTT_PORT=1883
+      - WEATHER_LOCATION=Santiago, CL
+      - PUSH_INTERVAL=15000
+      - TEMPERATURE_TOPIC=sensor/weather/santiago/temperature
+      - HUMIDITY_TOPIC=sensor/weather/santiago/humidity
 
   # Storage UI
   #
