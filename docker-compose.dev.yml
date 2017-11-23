@@ -46,12 +46,12 @@ services:
       - GF_DATABASE_USER=admin
       - GF_DATABASE_PASSWORD=${GRAFANA_POSTGRES_PASSWORD}
 
-  # IOT Server
+  # MQTT Backend Server
   #
   mqtt-backend:
     image: node:8-alpine
     volumes:
-      - ../mqtt-backend:/app
+      - ${MQTT_BACKEND_PATH}:/app
     working_dir: /app
     command: npm start
     depends_on:
@@ -71,7 +71,7 @@ services:
   weather-paris:
     image: node:8-alpine
     volumes:
-      - ../weather-client:/app
+      - ${MQTT_WEATHER_PATH}:/app
     working_dir: /app
     command: npm start
     depends_on:
@@ -80,7 +80,7 @@ services:
       - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
       - WEATHER_LOCATION=Paris, FR
-      - PUSH_INTERVAL=15000
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}
       - TEMPERATURE_TOPIC=sensor/weather/paris/temperature
       - HUMIDITY_TOPIC=sensor/weather/paris/humidity
 
@@ -89,7 +89,7 @@ services:
   weather-santiago:
     image: node:8-alpine
     volumes:
-      - ../weather-client:/app
+      - ${MQTT_WEATHER_PATH}:/app
     working_dir: /app
     command: npm start
     depends_on:
@@ -98,7 +98,7 @@ services:
       - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
       - WEATHER_LOCATION=Santiago, CL
-      - PUSH_INTERVAL=15000
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}
       - TEMPERATURE_TOPIC=sensor/weather/santiago/temperature
       - HUMIDITY_TOPIC=sensor/weather/santiago/humidity
 
