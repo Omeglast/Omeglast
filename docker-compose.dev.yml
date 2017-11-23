@@ -3,17 +3,17 @@ services:
 
   # MQTT Server (MOSCA)
   #
-  mqtt_server:
+  mqtt-server:
     image: matteocollina/mosca
     ports:
       - "1883:1883"
 
   # Storage (Postgres)
   #
-  storage:
+  mqtt-storage:
     image: postgres:10-alpine
     volumes:
-      - ../storage-postgreSQL/sql:/docker-entrypoint-initdb.d
+      - ../mqtt-backend/sql:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin
@@ -36,7 +36,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - storage
+      - grafana-storage
+      - mqtt-storage
     environment:
       - GF_DATABASE_TYPE=postgres
       - GF_DATABASE_HOST=grafana-storage
@@ -46,19 +47,19 @@ services:
 
   # IOT Server
   #
-  server:
+  mqtt-backend:
     image: node:8-alpine
     volumes:
-      - ../server:/app
+      - ../mqtt-backend:/app
     working_dir: /app
     command: npm start
     depends_on:
-      - mqtt_server
-      - storage
+      - mqtt-server
+      - mqtt-storage
     environment:
-      - MQTT_HOST=mqtt_server
+      - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
-      - POSTGRES_HOST=storage
+      - POSTGRES_HOST=mqtt-storage
       - POSTGRES_PORT=5432
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
@@ -73,9 +74,9 @@ services:
     working_dir: /app
     command: npm start
     depends_on:
-      - mqtt_server
+      - mqtt-server
     environment:
-      - MQTT_HOST=mqtt_server
+      - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
       - WEATHER_LOCATION=Paris, FR
       - PUSH_INTERVAL=15000
@@ -91,9 +92,9 @@ services:
     working_dir: /app
     command: npm start
     depends_on:
-      - mqtt_server
+      - mqtt-server
     environment:
-      - MQTT_HOST=mqtt_server
+      - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
       - WEATHER_LOCATION=Santiago, CL
       - PUSH_INTERVAL=15000
