@@ -1,0 +1,54 @@
+# Docker compose configuration for MQTT Server
+#
+# @author: Julien Mercier <devci@j3ck3l.me>
+#
+# Ready to be extends
+#
+version: '2'
+services:
+
+  # MQTT Server (MOSCA)
+  #
+  mqtt-server:
+    image: matteocollina/mosca
+    ports:
+      - "1883:1883"
+
+  # Storage (Postgres)
+  #
+  mqtt-storage:
+    image: postgres:10-alpine
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=omeglast
+
+  # MQTT Backend Server (devlopment version)
+  #
+  mqtt-backend-dev:
+    image: node:8-alpine
+    volumes:
+      - ../${MQTT_BACKEND_PATH}:/app
+    working_dir: /app
+    command: npm start
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - POSTGRES_HOST=mqtt-storage
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DATABASE=omeglast
+
+  # MQTT Backend Server
+  #
+  mqtt-backend:
+    image: jeckel/omeglast-mqtt-backend:latest
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - POSTGRES_HOST=mqtt-storage
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DATABASE=omeglast

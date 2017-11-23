@@ -1,0 +1,30 @@
+# Docker compose configuration for Weather Client
+#
+# @author: Julien Mercier <devci@j3ck3l.me>
+#
+# Ready to be extends
+#
+version: '2'
+services:
+
+  # Weather client (devlopment version)
+  #
+  weather-client-dev:
+    image: node:8-alpine
+    volumes:
+      - ../${MQTT_WEATHER_PATH}:/app
+    working_dir: /app
+    command: npm start
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}
+
+  # Weather client
+  #
+  weather-client:
+    image: jeckel/omeglast-weather-client:latest
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}

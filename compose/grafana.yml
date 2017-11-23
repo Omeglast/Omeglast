@@ -1,0 +1,32 @@
+# Docker compose configuration for Grafana
+#
+# @author: Julien Mercier <devci@j3ck3l.me>
+#
+# Ready to be extends
+#
+version: '2'
+services:
+  # Grafana dedicated storage
+  #
+  grafana-storage:
+    image: postgres:10-alpine
+    volumes:
+      - ./../sql/grafana:/docker-entrypoint-initdb.d
+      - grafana-pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${GRAFANA_POSTGRES_PASSWORD}
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=grafana
+
+  # Grafana Server
+  #
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=grafana-storage
+      - GF_DATABASE_NAME=grafana
+      - GF_DATABASE_USER=admin
+      - GF_DATABASE_PASSWORD=${GRAFANA_POSTGRES_PASSWORD}
