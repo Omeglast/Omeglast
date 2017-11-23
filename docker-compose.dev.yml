@@ -3,22 +3,32 @@ services:
 
   # MQTT Server (MOSCA)
   #
-  mqtt_server:
+  mqtt-server:
     image: matteocollina/mosca
     ports:
       - "1883:1883"
 
   # Storage (Postgres)
   #
-  storage:
+  mqtt-storage:
     image: postgres:10-alpine
     volumes:
-      - ../storage-postgreSQL/sql:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
+      - ../mqtt-backend/sql:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin
+      - POSTGRES_DB=omeglast
+
+  # Grafana dedicated storage
+  #
+  grafana-storage:
+    image: postgres:10-alpine
+    volumes:
+      - ./sql/grafana:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_PASSWORD=${GRAFANA_POSTGRES_PASSWORD}
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=grafana
 
   # Grafana Server
   #
@@ -27,33 +37,70 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - storage
+      - grafana-storage
+      - mqtt-storage
     environment:
       - GF_DATABASE_TYPE=postgres
-      - GF_DATABASE_HOST=storage
+      - GF_DATABASE_HOST=grafana-storage
       - GF_DATABASE_NAME=grafana
       - GF_DATABASE_USER=admin
-      - GF_DATABASE_PASSWORD=admin
+      - GF_DATABASE_PASSWORD=${GRAFANA_POSTGRES_PASSWORD}
 
-  # IOT Server
+  # MQTT Backend Server
   #
-  server:
+  mqtt-backend:
     image: node:8-alpine
     volumes:
-      - ../server:/app
+      - ${MQTT_BACKEND_PATH}:/app
     working_dir: /app
     command: npm start
     depends_on:
-      - mqtt_server
-      - storage
+      - mqtt-server
+      - mqtt-storage
     environment:
-      - MQTT_HOST=mqtt_server
+      - MQTT_HOST=mqtt-server
       - MQTT_PORT=1883
-      - POSTGRES_HOST=storage
+      - POSTGRES_HOST=mqtt-storage
       - POSTGRES_PORT=5432
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DATABASE=omeglast
+
+  # Weather client for Paris
+  #
+  weather-paris:
+    image: node:8-alpine
+    volumes:
+      - ${MQTT_WEATHER_PATH}:/app
+    working_dir: /app
+    command: npm start
+    depends_on:
+      - mqtt-server
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - WEATHER_LOCATION=Paris, FR
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}
+      - TEMPERATURE_TOPIC=sensor/weather/paris/temperature
+      - HUMIDITY_TOPIC=sensor/weather/paris/humidity
+
+  # Weather client for Santiago
+  #
+  weather-santiago:
+    image: node:8-alpine
+    volumes:
+      - ${MQTT_WEATHER_PATH}:/app
+    working_dir: /app
+    command: npm start
+    depends_on:
+      - mqtt-server
+    environment:
+      - MQTT_HOST=mqtt-server
+      - MQTT_PORT=1883
+      - WEATHER_LOCATION=Santiago, CL
+      - PUSH_INTERVAL=${WEATHER_REFRESH_INTERVAL}
+      - TEMPERATURE_TOPIC=sensor/weather/santiago/temperature
+      - HUMIDITY_TOPIC=sensor/weather/santiago/humidity
 
   # Storage UI
   #
