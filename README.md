@@ -1,5 +1,9 @@
 # Omeglast
 
+## Installation
+
+Copy the `.env.dist` file into `.env` and edit your preferences.
+
 ## Queries
 
 ```sql
