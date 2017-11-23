@@ -6,7 +6,7 @@ ifeq ($(ENV),dev)
 endif
 
 up:
-	@${COMPOSE_CMD} up -d storage grafana-storage && sleep 5 && ${COMPOSE_CMD} up
+	@${COMPOSE_CMD} up -d mqtt-storage grafana-storage && sleep 5 && ${COMPOSE_CMD} up
 
 stop:
 	@${COMPOSE_CMD} stop
