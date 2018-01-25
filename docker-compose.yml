@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 # Define volumes for Databases
 #
 volumes:
@@ -53,3 +53,16 @@ services:
     depends_on:
       - mqtt-server
       - mqtt-storage
+
+  # Weather client for Paris
+  #
+  weather-paris:
+    extends:
+      file: compose/weather.yml
+      service: weather-client
+    depends_on:
+      - mqtt-server
+    environment:
+      - WEATHER_LOCATION=Paris, FR
+      - TEMPERATURE_TOPIC=sensor/weather/paris/temperature
+      - HUMIDITY_TOPIC=sensor/weather/paris/humidity

@@ -26,7 +26,7 @@ services:
   # MQTT Backend Server (devlopment version)
   #
   mqtt-backend-dev:
-    image: node:8-alpine
+    image: node:9-alpine
     volumes:
       - ../${MQTT_BACKEND_PATH}:/app
     working_dir: /app
