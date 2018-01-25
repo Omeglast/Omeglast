@@ -12,7 +12,7 @@ stop:
 	@${COMPOSE_CMD} stop
 
 down:
-	@${COMPOSE_CMD} down
+	@${COMPOSE_CMD} down -v
 
 pull:
 	@${COMPOSE_CMD} pull

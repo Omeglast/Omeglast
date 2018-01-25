@@ -4,6 +4,7 @@ version: '2'
 volumes:
   mqtt-pgdata:
   grafana-pgdata:
+  influxdb-data:
 
 # Define services
 #
@@ -25,6 +26,15 @@ services:
     volumes:
       - mqtt-pgdata:/var/lib/postgresql/data
 
+  # Storage (Postgres)
+  #
+  mqtt-influxdb:
+    extends:
+      file: compose/mqtt.yml
+      service: mqtt-influxdb
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
   # Grafana dedicated storage
   #
   grafana-storage:
@@ -43,6 +53,7 @@ services:
     depends_on:
       - grafana-storage
       - mqtt-storage
+      - mqtt-influxdb
 
   # MQTT Backend Server
   #
